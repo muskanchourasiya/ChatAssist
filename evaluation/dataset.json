@@ -1,0 +1,17 @@
+[
+  {
+    "question": "How many paid leaves are allowed?",
+    "expected_answer": "20 paid leaves",
+    "doc_id": "policy_doc"
+  },
+  {
+    "question": "What are working hours?",
+    "expected_answer": "9 AM to 6 PM",
+    "doc_id": "policy_doc"
+  },
+  {
+    "question": "What is maternity leave duration?",
+    "expected_answer": "26 weeks",
+    "doc_id": "policy_doc"
+  }
+]

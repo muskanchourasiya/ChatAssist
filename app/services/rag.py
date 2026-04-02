@@ -1,34 +1,68 @@
 from app.services.embeddings import get_embedding
 from app.db.chroma import collection
 from app.services.llm import generate_answer
+from app.services.memory import get_history
 
-def retrieve(query, k=3):
+def rag_pipeline(query, history=None, user_role=None):
+    retrieved = retrieve(query, user_role)
+
+    docs = retrieved["documents"]
+    metadatas = retrieved["metadatas"]
+
+    prompt = build_prompt(query, docs, history or [])
+    answer = generate_answer(prompt)
+
+    if not is_grounded(answer, docs):
+        answer = "I don't know based on the provided documents."
+
+    return {
+        "answer": answer,
+        "sources": metadatas[:1],
+        "documents": docs
+    }
+
+def retrieve(query, user_role=None, k=3):
     query_embedding = get_embedding(query)
 
-    results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=k
-    )
+    if user_role:
+        results = collection.query(
+            query_embeddings=[query_embedding],
+            n_results=k,
+            where={"role": user_role}
+        )
+    else:
+        results = collection.query(
+            query_embeddings=[query_embedding],
+            n_results=k
+        )
 
-    return results["documents"][0]
+    return {
+        "documents": results["documents"][0],
+        "metadatas": results["metadatas"][0]
+    }
 
-
-def build_prompt(query, docs):
+def build_prompt(query, docs, history):
     context = "\n\n".join(docs)
 
+    history_text = "\n".join([
+        f"{m['role']}: {m['content']}" for m in history
+    ])
+
     return f"""
-You must answer ONLY using the context below.
-If answer is not present, say "I don't know".
+    You must cite sources using provided metadata. Do not invent chunk IDs.
+    Conversation History:
+    {history_text}
 
-Context:
-{context}
+    Context:
+    {context}
 
-Question:
-{query}
-"""
+    Question:
+    {query}
+    """
 
-
-def rag_pipeline(query):
-    docs = retrieve(query)
-    prompt = build_prompt(query, docs)
-    return generate_answer(prompt)
+def is_grounded(answer, docs):
+    for doc in docs:
+        for word in answer.lower().split():
+            if word in doc.lower():
+                return True
+    return False

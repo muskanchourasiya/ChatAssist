@@ -5,9 +5,18 @@ client = Groq(api_key=GROQ_API_KEY)
 
 def generate_answer(prompt):
     response = client.chat.completions.create(
-        model="llama3-70b-8192",
+        model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
         temperature=0
     )
-
     return response.choices[0].message.content
+
+def stream_answer(prompt):
+    stream = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        stream=True
+    )
+
+    for chunk in stream:
+        yield chunk.choices[0].delta.content or ""

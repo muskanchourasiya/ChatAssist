@@ -32,7 +32,11 @@ async def upload_file(file: UploadFile):
         ids.append(f"{doc_id}_{i}")
         embeddings.append(get_embedding(chunk))
         documents.append(chunk)
-        metadatas.append({"doc_id": doc_id})
+        metadatas.append({
+            "doc_id": doc_id,
+            "chunk_id": f"{doc_id}_{i}",
+            "role": "HR"
+        })
 
     collection.add(
         ids=ids,
