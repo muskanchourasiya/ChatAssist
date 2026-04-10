@@ -29,7 +29,6 @@ def evaluate():
         answer = result["answer"]
         sources = result["sources"]
 
-        # Metrics
         retrieval_score += any(s["doc_id"] == expected_doc for s in sources)
         answer_score += expected.lower() in answer.lower()
 
