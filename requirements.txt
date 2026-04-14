@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pydantic
+responses
+groq
+python-dotenv
+logging
+requests
+uuid
+sentence_transformers
+chromadb
+langchain
+pymupdf
+python-multipart
