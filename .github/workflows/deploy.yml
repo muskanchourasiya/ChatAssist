@@ -1,0 +1,33 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Login to DockerHub
+        run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
+
+      - name: Build Image
+        run: docker build -t ${{ secrets.DOCKER_USER }}/chatassist:latest .
+
+      - name: Push Image
+        run: docker push ${{ secrets.DOCKER_USER }}/chatassist:latest
+
+      - name: Set Kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+
+      - name: Deploy to K8s
+        run: |
+          kubectl apply -f k8s/
+          kubectl rollout restart deployment chatassist

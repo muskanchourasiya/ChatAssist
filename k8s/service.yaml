@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: chatassist-service
+spec:
+  type: ClusterIP
+  selector:
+    app: chatassist
+  ports:
+    - port: 80
+      targetPort: 8000
